@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration | Nexus Bank</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">Nexus<span>Bank</span></a>
+        <div class="nav-links">
+            <a href="user_login.html">Login</a>
+        </div>
+    </nav>
+
+    <div class="container glass-panel" style="max-width: 500px;">
+        <h2 class="text-center" style="margin-bottom: 0.5rem;">Create Account</h2>
+        <p class="text-center text-muted" style="margin-bottom: 2rem; font-size: 0.9rem;">Join Nexus Bank to experience seamless transfers</p>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="fullName" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" id="phone" class="form-control" required placeholder="10 digit number">
+            </div>
+            <div class="form-group">
+                <label>PAN Number</label>
+                <input type="text" id="pan" class="form-control" required style="text-transform: uppercase;">
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="address" class="form-control" required>
+            </div>
+            <div class="form-group flex gap-1">
+                <div style="flex: 1;">
+                    <label>Account Type</label>
+                    <select id="accType" class="form-control" required>
+                        <option value="Savings">Savings</option>
+                        <option value="Current">Current</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Transaction Password</label>
+                    <input type="password" id="txPassword" class="form-control" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Open Account</button>
+            <p id="errorMsg" class="text-danger text-center mt-2"></p>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                full_name: document.getElementById('fullName').value,
+                phone_number: document.getElementById('phone').value,
+                pan_number: document.getElementById('pan').value,
+                address: document.getElementById('address').value,
+                account_type: document.getElementById('accType').value,
+                transaction_password: document.getElementById('txPassword').value
+            };
+
+            const res = await fetch('http://localhost:5000/api/user/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            
+            if(result.success) {
+                alert("Account created! Please login.");
+                window.location.href = 'user_login.html';
+            } else {
+                document.getElementById('errorMsg').innerText = result.error;
+            }
+        });
+    </script>
+</body>
+</html>

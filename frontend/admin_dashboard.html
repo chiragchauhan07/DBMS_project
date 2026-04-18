@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Nexus Bank Views</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 900px) {
+            .dashboard-grid { grid-template-columns: 2fr 1.5fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">Nexus<span>Bank</span> &nbsp; <span style="font-size: 0.9rem; color: #ef4444; font-weight: normal; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 4px;">ADMIN PORTAL</span></a>
+        <div class="nav-links">
+            <a href="index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container dashboard-grid">
+        <!-- Main: View All Users -->
+        <div class="glass-panel">
+            <h2>User Database (vw_admin_dashboard)</h2>
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">Joined table data normalized to 3NF</p>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Phone (Unique)</th>
+                            <th>PAN (Unique)</th>
+                            <th>Account No</th>
+                            <th>Type</th>
+                            <th>Balance (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr><td colspan="6" class="text-center">Loading Data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sidebar: Suspicious Transactions -->
+        <div class="glass-panel" style="border-color: rgba(239, 68, 68, 0.4);">
+            <h2 class="text-danger flex items-center gap-1">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                Suspicious Activity
+            </h2>
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">Detected via Database Triggers (>2x Average Transfer)</p>
+            
+            <div id="suspiciousContainer">
+                <p class="text-center text-muted">Scanning system logs...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadAdminData() {
+            try {
+                const res = await fetch(`http://localhost:5000/api/admin/dashboard`);
+                const data = await res.json();
+                
+                if(data.success) {
+                    const tbody = document.getElementById('userTableBody');
+                    tbody.innerHTML = '';
+                    
+                    data.users.forEach(u => {
+                        const tr = document.createElement('tr');
+                        // Danger sign logic for users who have suspicious_tx_count > 0
+                        const dangerSign = u.suspicious_tx_count > 0 ? `<span class="danger-sign">🚨 flagged (${u.suspicious_tx_count})</span>` : '';
+                        
+                        tr.innerHTML = `
+                            <td><strong>${u.full_name}</strong> ${dangerSign}</td>
+                            <td>${u.phone_number}</td>
+                            <td>${u.pan_number || 'N/A'}</td>
+                            <td><span style="font-family: monospace;">${u.account_number || 'No Account'}</span></td>
+                            <td>${u.account_type || '-'}</td>
+                            <td>₹${u.balance || '0.00'}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Load Suspicious Transactions
+                    const sContainer = document.getElementById('suspiciousContainer');
+                    sContainer.innerHTML = '';
+                    
+                    if(data.suspicious_transactions.length === 0) {
+                        sContainer.innerHTML = '<p class="text-center text-muted" style="padding: 2rem;">No suspicious transactions detected.</p>';
+                    } else {
+                        data.suspicious_transactions.forEach(st => {
+                            const div = document.createElement('div');
+                            div.style.cssText = `
+                                padding: 1rem; 
+                                background: rgba(239, 68, 68, 0.1); 
+                                border-left: 4px solid var(--danger);
+                                margin-bottom: 1rem;
+                                border-radius: 4px;
+                            `;
+                            div.innerHTML = `
+                                <div class="flex justify-between items-center" style="margin-bottom: 0.5rem;">
+                                    <strong>${st.full_name}</strong>
+                                    <span class="text-danger">₹${st.amount}</span>
+                                </div>
+                                <div class="text-muted" style="font-size: 0.85rem;">
+                                    Account: <span style="font-family: monospace;">${st.account_number}</span><br>
+                                    Time: ${new Date(st.created_at).toLocaleString()}
+                                </div>
+                            `;
+                            sContainer.appendChild(div);
+                        });
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        loadAdminData();
+    </script>
+</body>
+</html>
