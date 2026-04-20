@@ -1,79 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login | Nexus Bank</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sign In | ANTIGRAVITY</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                "colors": {
+                        "primary": "#b3c5ff",
+                        "tertiary": "#eac34a",
+                        "on-tertiary": "#3c2f00",
+                        "background": "#10141a",
+                        "surface": "#1c2026",
+                        "on-surface": "#dfe2eb",
+                        "on-surface-variant": "#c5c6d2",
+                },
+                "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                }
+              },
+            },
+          }
+        </script>
+    <style>
+        body { 
+            background-color: #10141a; 
+            color: #dfe2eb; 
+            font-family: 'Inter', sans-serif;
+            min-height: 100dvh;
+        }
+        .bg-card { background-color: #1c2026; }
+    </style>
 </head>
-<body>
-    <nav>
-        <a href="index.html" class="logo">Nexus<span>Bank</span></a>
-        <div class="nav-links">
-            <a href="user_register.html">Open Account</a>
+<body class="flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+        <!-- Brand Header -->
+        <div class="text-center mb-8">
+            <a href="index.html" class="inline-flex items-center gap-2 mb-4">
+                <span class="text-xl font-black tracking-tighter text-primary">ANTIGRAVITY</span>
+            </a>
+            <h1 class="text-3xl font-bold tracking-tight">Access Your Vault</h1>
+            <p class="text-on-surface-variant text-sm mt-2">Secure biometric-simulated SMS authentication</p>
         </div>
-    </nav>
 
-    <div class="container glass-panel" style="max-width: 400px; margin-top: 5rem;">
-        <h2 class="text-center mb-2">Personal Banking Login</h2>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="text" id="phone" class="form-control" required placeholder="Enter registered phone">
-            </div>
-            
-            <div class="form-group" id="otpGroup" style="display: none;">
-                <label>Enter OTP</label>
-                <input type="text" id="otp" class="form-control" placeholder="Use '1234' for demo">
-            </div>
+        <!-- Auth Card -->
+        <div class="bg-card rounded-[2rem] p-8 border border-white/5 shadow-2xl">
+            <!-- Step 1: Phone Request -->
+            <form id="otpRequestForm" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-2">Phone Number</label>
+                    <input type="text" id="phone" placeholder="Registered mobile number" required 
+                           class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface">
+                </div>
+                <button type="submit" id="btnRequest" class="w-full bg-primary text-on-tertiary font-bold py-4 rounded-xl hover:bg-tertiary transition-all">
+                    Send Security Code
+                </button>
+            </form>
 
-            <button type="button" id="getOtpBtn" class="btn btn-primary mt-2">Get OTP</button>
-            <button type="submit" id="loginBtn" class="btn btn-primary mt-2" style="display: none;">Login via OTP</button>
-            
-            <p id="errorMsg" class="text-danger text-center mt-2"></p>
-        </form>
-        
-        <p class="text-center mt-2" style="font-size: 0.9rem; color: var(--text-muted);">
-            Don't have an account? <a href="user_register.html" style="color: var(--primary);">Sign up</a>
-        </p>
+            <!-- Step 2: OTP Entry (Hidden initially) -->
+            <form id="loginForm" class="space-y-6 hidden">
+                <div class="bg-primary/5 p-4 rounded-xl border border-primary/20 text-center mb-4">
+                    <p class="text-xs text-primary">Code sent to <span id="displayPhone"></span></p>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-2">Security Code (OTP)</label>
+                    <input type="text" id="otp" placeholder="XXXX" maxlength="4" required 
+                           class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-center text-2xl tracking-[1em] focus:outline-none focus:border-tertiary/50 transition-all text-tertiary">
+                </div>
+                <button type="submit" id="btnLogin" class="w-full bg-tertiary text-on-tertiary font-bold py-4 rounded-xl hover:opacity-90 transition-all">
+                    Verify & Unlock
+                </button>
+                <div class="text-center">
+                    <button type="button" onclick="resetFlow()" class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant hover:text-primary transition-all">Change Phone Number</button>
+                </div>
+            </form>
+
+            <p id="msg" class="mt-6 text-center text-sm font-medium"></p>
+        </div>
+
+        <div class="text-center mt-8">
+            <p class="text-on-surface-variant text-sm">New to Antigravity? <a href="user_register.html" class="text-primary font-bold">Open Account</a></p>
+        </div>
     </div>
 
     <script>
-        const getOtpBtn = document.getElementById('getOtpBtn');
-        const loginBtn = document.getElementById('loginBtn');
-        const otpGroup = document.getElementById('otpGroup');
+        const API_URL = 'http://localhost:5000/api';
+        const otpRequestForm = document.getElementById('otpRequestForm');
+        const loginForm = document.getElementById('loginForm');
+        const msg = document.getElementById('msg');
 
-        getOtpBtn.addEventListener('click', () => {
-            if(document.getElementById('phone').value.trim() !== '') {
-                alert("Simulated: OTP sent to your phone! (Hint: enter 1234)");
-                getOtpBtn.style.display = 'none';
-                otpGroup.style.display = 'block';
-                loginBtn.style.display = 'block';
-            }
-        });
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        otpRequestForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = {
-                phone_number: document.getElementById('phone').value,
-                otp: document.getElementById('otp').value
-            };
-
-            const res = await fetch('http://localhost:5000/api/user/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
+            const phone = document.getElementById('phone').value;
+            const btn = document.getElementById('btnRequest');
             
-            if(result.success) {
-                localStorage.setItem('user_id', result.user_id);
-                window.location.href = 'user_dashboard.html';
-            } else {
-                document.getElementById('errorMsg').innerText = result.error;
+            btn.innerText = 'Requesting...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/user/request-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: phone })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    otpRequestForm.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+                    document.getElementById('displayPhone').innerText = phone;
+                    msg.className = 'mt-6 text-center text-sm text-green-400';
+                    msg.innerText = 'Verification code sent via SMS.';
+                } else {
+                    msg.className = 'mt-6 text-center text-sm text-red-400';
+                    msg.innerText = data.error;
+                    btn.disabled = false;
+                    btn.innerText = 'Send Security Code';
+                }
+            } catch (err) {
+                console.error(err);
+                msg.innerText = 'Service unavailable. Is the backend running?';
             }
         });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            const otpCode = document.getElementById('otp').value;
+            const btn = document.getElementById('btnLogin');
+
+            btn.innerText = 'Verifying...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/user/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: phone, otp: otpCode })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    localStorage.setItem('user_id', data.user_id);
+                    msg.className = 'mt-6 text-center text-sm text-green-400 font-bold';
+                    msg.innerText = 'Identity Verified. Redirecting...';
+                    setTimeout(() => window.location.href = 'user_dashboard.html', 1000);
+                } else {
+                    msg.className = 'mt-6 text-center text-sm text-red-400';
+                    msg.innerText = data.error;
+                    btn.disabled = false;
+                    btn.innerText = 'Verify & Unlock';
+                }
+            } catch (err) {
+                console.error(err);
+                msg.innerText = 'Verification failed.';
+            }
+        });
+
+        function resetFlow() {
+            otpRequestForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            document.getElementById('btnRequest').disabled = false;
+            document.getElementById('btnRequest').innerText = 'Send Security Code';
+            msg.innerText = '';
+        }
     </script>
 </body>
 </html>

@@ -1,82 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Registration | Nexus Bank</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Open Account | ANTIGRAVITY</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                "colors": {
+                        "primary": "#b3c5ff",
+                        "tertiary": "#eac34a",
+                        "on-tertiary": "#3c2f00",
+                        "background": "#10141a",
+                        "surface": "#1c2026",
+                        "on-surface": "#dfe2eb",
+                        "on-surface-variant": "#c5c6d2",
+                },
+                "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                }
+              },
+            },
+          }
+        </script>
+    <style>
+        body { background-color: #10141a; color: #dfe2eb; font-family: 'Inter', sans-serif; min-height: 100dvh; }
+        .bg-card { background-color: #1c2026; }
+    </style>
 </head>
-<body>
-    <nav>
-        <a href="index.html" class="logo">Nexus<span>Bank</span></a>
-        <div class="nav-links">
-            <a href="user_login.html">Login</a>
+<body class="flex items-center justify-center p-6">
+    <div class="max-w-xl w-full">
+        <!-- Brand Header -->
+        <div class="text-center mb-8">
+            <a href="index.html" class="inline-flex items-center gap-2 mb-4">
+                <span class="text-xl font-black tracking-tighter text-primary">ANTIGRAVITY</span>
+            </a>
+            <h1 class="text-3xl font-bold tracking-tight">Begin Your Protocol</h1>
+            <p class="text-on-surface-variant text-sm mt-2">Personalized institutional-grade asset management</p>
         </div>
-    </nav>
 
-    <div class="container glass-panel" style="max-width: 500px;">
-        <h2 class="text-center" style="margin-bottom: 0.5rem;">Create Account</h2>
-        <p class="text-center text-muted" style="margin-bottom: 2rem; font-size: 0.9rem;">Join Nexus Bank to experience seamless transfers</p>
-        
-        <form id="registerForm">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="fullName" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="text" id="phone" class="form-control" required placeholder="10 digit number">
-            </div>
-            <div class="form-group">
-                <label>PAN Number</label>
-                <input type="text" id="pan" class="form-control" required style="text-transform: uppercase;">
-            </div>
-            <div class="form-group">
-                <label>Address</label>
-                <input type="text" id="address" class="form-control" required>
-            </div>
-            <div class="form-group flex gap-1">
-                <div style="flex: 1;">
-                    <label>Account Type</label>
-                    <select id="accType" class="form-control" required>
-                        <option value="Savings">Savings</option>
-                        <option value="Current">Current</option>
-                    </select>
+        <!-- Registration Card -->
+        <div class="bg-card rounded-[2.5rem] p-10 border border-white/5 shadow-2xl">
+            <form id="registerForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Full Legal Name</label>
+                        <input type="text" id="fullName" placeholder="e.g. John Doe" required 
+                               class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Phone Number</label>
+                        <input type="text" id="phone" placeholder="+91 XXXXX XXXXX" required 
+                               class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">PAN Card Number</label>
+                        <input type="text" id="pan" placeholder="ABCDE1234F" required 
+                               class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface uppercase">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Account Type</label>
+                        <select id="accType" class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface appearance-none">
+                            <option value="Savings">Savings Protocol</option>
+                            <option value="Current">Current Protocol</option>
+                        </select>
+                    </div>
                 </div>
-                <div style="flex: 1;">
-                    <label>Transaction Password</label>
-                    <input type="password" id="txPassword" class="form-control" required>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Residential Address</label>
+                    <textarea id="address" placeholder="Full permanent address" required rows="2"
+                              class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface"></textarea>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-primary mt-2">Open Account</button>
-            <p id="errorMsg" class="text-danger text-center mt-2"></p>
-        </form>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Transaction Password</label>
+                    <input type="password" id="txPass" placeholder="Secure unique password" required 
+                           class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface">
+                </div>
+
+                <button type="submit" id="btnSubmit" class="w-full bg-primary text-on-tertiary font-bold py-4 rounded-xl hover:bg-tertiary transition-all">
+                    Initialize Account
+                </button>
+            </form>
+
+            <p id="msg" class="mt-6 text-center text-sm font-medium"></p>
+        </div>
+
+        <div class="text-center mt-8">
+            <p class="text-on-surface-variant text-sm">Already a member? <a href="user_login.html" class="text-primary font-bold">Sign In</a></p>
+        </div>
     </div>
 
     <script>
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        const API_URL = 'http://localhost:5000/api';
+        const registerForm = document.getElementById('registerForm');
+        const msg = document.getElementById('msg');
+
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = {
+            const btn = document.getElementById('btnSubmit');
+            
+            btn.innerText = 'Synchronizing...';
+            btn.disabled = true;
+
+            const payload = {
                 full_name: document.getElementById('fullName').value,
                 phone_number: document.getElementById('phone').value,
                 pan_number: document.getElementById('pan').value,
                 address: document.getElementById('address').value,
                 account_type: document.getElementById('accType').value,
-                transaction_password: document.getElementById('txPassword').value
+                transaction_password: document.getElementById('txPass').value
             };
 
-            const res = await fetch('http://localhost:5000/api/user/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            
-            if(result.success) {
-                alert("Account created! Please login.");
-                window.location.href = 'user_login.html';
-            } else {
-                document.getElementById('errorMsg').innerText = result.error;
+            try {
+                const res = await fetch(`${API_URL}/user/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    msg.className = 'mt-6 text-center text-sm text-green-400 font-bold';
+                    msg.innerText = 'Account Protocol Initiated! Redirecting to Sign In...';
+                    setTimeout(() => window.location.href = 'user_login.html', 2000);
+                } else {
+                    msg.className = 'mt-6 text-center text-sm text-red-400';
+                    msg.innerText = data.error;
+                    btn.disabled = false;
+                    btn.innerText = 'Initialize Account';
+                }
+            } catch (err) {
+                console.error(err);
+                msg.innerText = 'Network error. Protocol failed.';
             }
         });
     </script>

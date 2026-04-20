@@ -36,7 +36,8 @@ CREATE TABLE accounts (
 CREATE TABLE transactions (
     transaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     sender_account_id UUID REFERENCES accounts(account_id),
-    receiver_account_id UUID REFERENCES accounts(account_id),
+    receiver_account_id UUID REFERENCES accounts(account_id), -- NULL for external transfers
+    receiver_phone_external VARCHAR(15), -- Captured if no internal account is associated
     amount DECIMAL(15, 2) NOT NULL CHECK (amount > 0),
     transaction_type VARCHAR(20) CHECK (transaction_type IN ('Deposit', 'Withdrawal', 'Transfer')),
     is_suspicious BOOLEAN DEFAULT FALSE,
@@ -47,6 +48,24 @@ CREATE TABLE audit_logs (
     log_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_id UUID,
     log_details TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE login_otps (
+    otp_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phone_number VARCHAR(15) NOT NULL,
+    otp_code VARCHAR(4) NOT NULL,
+    expiry_at TIMESTAMP NOT NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE notifications (
+    notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -99,13 +118,18 @@ JOIN accounts a ON u.user_id = a.user_id;
 CREATE OR REPLACE FUNCTION check_suspicious_transaction()
 RETURNS TRIGGER AS $$
 DECLARE
-    avg_transfer DECIMAL(15, 2);
+    v_avg_transfer DECIMAL(15, 2);
 BEGIN
-    SELECT COALESCE(AVG(amount), 0) INTO avg_transfer
-    FROM transactions
-    WHERE sender_account_id = NEW.sender_account_id AND transaction_type = 'Transfer';
+    -- Calculate average using a subquery assignment for better compatibility
+    v_avg_transfer := (
+        SELECT COALESCE(AVG(amount), 0) 
+        FROM transactions 
+        WHERE sender_account_id = NEW.sender_account_id 
+        AND transaction_type = 'Transfer'
+    );
     
-    IF avg_transfer > 0 AND NEW.amount > (2 * avg_transfer) THEN
+    -- If there's a history and the new amount is > 2x average, flag it
+    IF v_avg_transfer > 0 AND NEW.amount > (2 * v_avg_transfer) THEN
         NEW.is_suspicious := TRUE;
     END IF;
     
@@ -151,41 +175,49 @@ DECLARE
     v_receiver_account_id UUID;
     v_current_balance DECIMAL;
 BEGIN
-    -- 1. Find the receiver's account via their phone number
-    SELECT a.account_id INTO v_receiver_account_id
-    FROM accounts a
-    JOIN users u ON a.user_id = u.user_id
-    WHERE u.phone_number = p_receiver_phone;
+    -- 1. Try to find an internal receiver's account via their phone number
+    v_receiver_account_id := (
+        SELECT a.account_id 
+        FROM accounts a
+        JOIN users u ON a.user_id = u.user_id
+        WHERE u.phone_number = p_receiver_phone
+        LIMIT 1
+    );
     
-    IF v_receiver_account_id IS NULL THEN
-        RAISE EXCEPTION 'Receiver account not found for phone %', p_receiver_phone;
-    END IF;
-
+    -- No error if receiver is missing; we treat as external transfer
     IF v_receiver_account_id = p_sender_account_id THEN
         RAISE EXCEPTION 'Cannot transfer to identical account';
     END IF;
     
     -- 2. Lock the sender's row and check balance (Concurrency Control)
-    SELECT balance INTO v_current_balance
-    FROM accounts 
-    WHERE account_id = p_sender_account_id FOR UPDATE;
+    v_current_balance := (
+        SELECT balance 
+        FROM accounts 
+        WHERE account_id = p_sender_account_id 
+        FOR UPDATE
+    );
     
     IF v_current_balance < p_amount THEN
         RAISE EXCEPTION 'Insufficient balance. Current balance: %', v_current_balance;
     END IF;
     
-    -- 3. Deduct from sender
+    -- 3. ALWAYS Deduct from sender
     UPDATE accounts SET balance = balance - p_amount WHERE account_id = p_sender_account_id;
     
-    -- 4. Add to receiver
-    UPDATE accounts SET balance = balance + p_amount WHERE account_id = v_receiver_account_id;
+    -- 4. ONLY Credit receiver if they are internal
+    IF v_receiver_account_id IS NOT NULL THEN
+        UPDATE accounts SET balance = balance + p_amount WHERE account_id = v_receiver_account_id;
+    END IF;
     
-    -- 5. Insert transaction record (Triggers will automatically log and check for suspicious activity)
-    INSERT INTO transactions (sender_account_id, receiver_account_id, amount, transaction_type)
-    VALUES (p_sender_account_id, v_receiver_account_id, p_amount, 'Transfer');
+    -- 5. Insert transaction record
+    -- If v_receiver_account_id is NULL, receiver_phone_external is populated instead
+    INSERT INTO transactions (sender_account_id, receiver_account_id, receiver_phone_external, amount, transaction_type)
+    VALUES (p_sender_account_id, v_receiver_account_id, 
+            CASE WHEN v_receiver_account_id IS NULL THEN p_receiver_phone ELSE NULL END, 
+            p_amount, 'Transfer');
     
     -- PostgreSQL will automatically COMMIT here if no exception was raised.
-    -- If any exception happens above, the whole block is automatically Rolled Back.
+    -- If any exception happens above (e.g. insufficient funds), the whole block is automatically Rolled Back.
 END;
 $$;
 

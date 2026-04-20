@@ -1,58 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | DBMS Nexus Bank</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin Command | ANTIGRAVITY</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                "colors": {
+                        "primary": "#b3c5ff",
+                        "tertiary": "#eac34a",
+                        "on-tertiary": "#3c2f00",
+                        "background": "#10141a",
+                        "surface": "#1c2026",
+                        "on-surface": "#dfe2eb",
+                },
+              },
+            },
+          }
+        </script>
+    <style>
+        body { background-color: #10141a; color: #dfe2eb; font-family: 'Inter', sans-serif; min-height: 100dvh; }
+        .bg-card { background-color: #1c2026; }
+    </style>
 </head>
-<body>
-    <nav>
-        <a href="index.html" class="logo">Nexus<span>Bank</span> &nbsp; <span style="font-size: 0.9rem; color: #ef4444; font-weight: normal; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 4px;">ADMIN PORTAL</span></a>
-        <div class="nav-links">
-            <a href="index.html">Back to Home</a>
+<body class="flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+        <!-- Brand Header -->
+        <div class="text-center mb-8">
+            <span class="text-[10px] uppercase tracking-[0.3em] font-bold text-tertiary mb-2 block">Level 10 clearance required</span>
+            <h1 class="text-3xl font-bold tracking-tighter">Command Center</h1>
+            <p class="text-[#c5c6d2] text-sm mt-2">Institutional Management Portal</p>
         </div>
-    </nav>
 
-    <div class="container glass-panel" style="max-width: 400px; margin-top: 5rem;">
-        <h2 class="text-center mb-2">Systems Admin Login</h2>
-        
-        <form id="adminForm">
-            <div class="form-group">
-                <label>Admin Username</label>
-                <input type="text" id="username" class="form-control" required placeholder="admin">
-            </div>
-            
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" class="form-control" required placeholder="admin123">
-            </div>
+        <!-- Admin Card -->
+        <div class="bg-card rounded-[2rem] p-8 border border-white/5 shadow-2xl">
+            <form id="adminLoginForm" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-[#c5c6d2] mb-2">Admin Identifier</label>
+                    <input type="text" id="username" placeholder="System ID" required 
+                           class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-[#c5c6d2] mb-2">Access Key Override</label>
+                    <input type="password" id="password" placeholder="••••••••" required 
+                           class="w-full bg-background border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/50 transition-all text-on-surface">
+                </div>
+                <button type="submit" id="btnAdminLogin" class="w-full bg-tertiary text-on-tertiary font-bold py-4 rounded-xl hover:opacity-90 transition-all">
+                    Initialize Session
+                </button>
+            </form>
+            <p id="msg" class="mt-6 text-center text-sm font-medium"></p>
+        </div>
 
-            <button type="submit" class="btn mt-2" style="background: rgba(239, 68, 68, 0.8); color: white; width: 100%;">Access Database Views</button>
-            
-            <p id="errorMsg" class="text-danger text-center mt-2"></p>
-        </form>
+        <div class="text-center mt-8">
+            <a href="index.html" class="text-[#c5c6d2] text-sm hover:text-primary transition-all flex items-center justify-center gap-2">
+                <span>← Return to Public Terminal</span>
+            </a>
+        </div>
     </div>
 
     <script>
-        document.getElementById('adminForm').addEventListener('submit', async (e) => {
+        const API_URL = 'http://localhost:5000/api';
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const msg = document.getElementById('msg');
+
+        adminLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = {
+            const btn = document.getElementById('btnAdminLogin');
+            btn.innerText = 'Authorizing...';
+
+            const payload = {
                 username: document.getElementById('username').value,
                 password: document.getElementById('password').value
             };
 
-            const res = await fetch('http://localhost:5000/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            
-            if(result.success) {
-                window.location.href = 'admin_dashboard.html';
-            } else {
-                document.getElementById('errorMsg').innerText = result.error;
+            try {
+                const res = await fetch(`${API_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    msg.className = 'mt-6 text-center text-sm text-green-400 font-bold';
+                    msg.innerText = 'Clearance Granted. Redirecting...';
+                    setTimeout(() => window.location.href = 'admin_dashboard.html', 1000);
+                } else {
+                    msg.className = 'mt-6 text-center text-sm text-red-400';
+                    msg.innerText = data.error;
+                    btn.innerText = 'Initialize Session';
+                }
+            } catch (err) {
+                console.error(err);
+                msg.innerText = 'Command failed.';
             }
         });
     </script>

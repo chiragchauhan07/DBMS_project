@@ -1,128 +1,208 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Nexus Bank Views</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin Dashboard | ANTIGRAVITY</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                "colors": {
+                        "primary": "#b3c5ff",
+                        "tertiary": "#eac34a",
+                        "on-tertiary": "#3c2f00",
+                        "background": "#0a0e14",
+                        "surface": "#161b22",
+                },
+              },
+            },
+          }
+        </script>
     <style>
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        body { background-color: #0a0e14; color: #dfe2eb; font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
-        @media (min-width: 900px) {
-            .dashboard-grid { grid-template-columns: 2fr 1.5fr; }
-        }
+        .kpi-card { border: 1px solid rgba(179, 197, 255, 0.05); }
     </style>
 </head>
-<body>
-    <nav>
-        <a href="index.html" class="logo">Nexus<span>Bank</span> &nbsp; <span style="font-size: 0.9rem; color: #ef4444; font-weight: normal; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 4px;">ADMIN PORTAL</span></a>
-        <div class="nav-links">
-            <a href="index.html">Logout</a>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="border-b border-white/5 bg-[#0a0e14]/60 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-[1600px] mx-auto flex justify-between items-center px-8 py-4">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-tertiary">monitor_heart</span>
+                <span class="text-lg font-black tracking-tighter text-on-surface">ANTIGRAVITY <span class="text-tertiary">COMMAND</span></span>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Global Surveillance Active</span>
+                </div>
+                <button onclick="window.location.href='index.html'" class="text-on-surface-variant hover:text-white transition-all">
+                    <span class="material-symbols-outlined">logout</span>
+                </button>
+            </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="container dashboard-grid">
-        <!-- Main: View All Users -->
-        <div class="glass-panel">
-            <h2>User Database (vw_admin_dashboard)</h2>
-            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">Joined table data normalized to 3NF</p>
-            
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User Name</th>
-                            <th>Phone (Unique)</th>
-                            <th>PAN (Unique)</th>
-                            <th>Account No</th>
-                            <th>Type</th>
-                            <th>Balance (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                        <tr><td colspan="6" class="text-center">Loading Data...</td></tr>
-                    </tbody>
-                </table>
+    <main class="max-w-[1600px] mx-auto p-8 w-full space-y-8 flex-1">
+        <!-- KPI Section -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="glass-panel p-6 rounded-3xl kpi-card">
+                <p class="text-[10px] uppercase tracking-widest text-[#c5c6d2] font-bold mb-1">Total Verified Users</p>
+                <h2 id="totalUsers" class="text-3xl font-black text-primary">--</h2>
+            </div>
+            <div class="glass-panel p-6 rounded-3xl kpi-card">
+                <p class="text-[10px] uppercase tracking-widest text-[#c5c6d2] font-bold mb-1">Institutional Liquidity</p>
+                <h2 id="totalBalance" class="text-3xl font-black text-on-surface">--</h2>
+            </div>
+            <div class="glass-panel p-6 rounded-3xl kpi-card border-tertiary/20 bg-tertiary/5">
+                <p class="text-[10px] uppercase tracking-widest text-tertiary font-bold mb-1">Security Anomalies</p>
+                <h2 id="totalSuspicious" class="text-3xl font-black text-tertiary">--</h2>
+            </div>
+            <div class="glass-panel p-6 rounded-3xl kpi-card">
+                <p class="text-[10px] uppercase tracking-widest text-[#c5c6d2] font-bold mb-1">System Health</p>
+                <h2 class="text-3xl font-black text-green-400">99.9%</h2>
             </div>
         </div>
 
-        <!-- Sidebar: Suspicious Transactions -->
-        <div class="glass-panel" style="border-color: rgba(239, 68, 68, 0.4);">
-            <h2 class="text-danger flex items-center gap-1">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                Suspicious Activity
-            </h2>
-            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">Detected via Database Triggers (>2x Average Transfer)</p>
-            
-            <div id="suspiciousContainer">
-                <p class="text-center text-muted">Scanning system logs...</p>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Flagged Users -->
+            <div class="lg:col-span-8 glass-panel rounded-3xl overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                    <h3 class="font-bold flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">group</span>
+                        Global User Registry
+                    </h3>
+                </div>
+                <div class="flex-1 overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] uppercase tracking-widest text-[#c5c6d2] border-b border-white/5">
+                                <th class="px-6 py-4">Account Holder</th>
+                                <th class="px-6 py-4">Phone / PAN</th>
+                                <th class="px-6 py-4">Volume (₹)</th>
+                                <th class="px-6 py-4 text-center">Threat Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Alert Matrix -->
+            <div class="lg:col-span-4 glass-panel rounded-3xl overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-white/5">
+                    <h3 class="font-bold flex items-center gap-3">
+                        <span class="material-symbols-outlined text-red-400">warning</span>
+                        Suspicious Activity Matrix
+                    </h3>
+                </div>
+                <div class="p-2 space-y-2 flex-1 overflow-y-auto max-h-[600px]" id="alertsContainer">
+                    <!-- Alerts -->
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        async function loadAdminData() {
+        const API_URL = 'http://localhost:5000/api';
+
+        async function loadAdminDashboard() {
             try {
-                const res = await fetch(`http://localhost:5000/api/admin/dashboard`);
+                const res = await fetch(`${API_URL}/admin/dashboard`);
                 const data = await res.json();
                 
                 if(data.success) {
-                    const tbody = document.getElementById('userTableBody');
-                    tbody.innerHTML = '';
-                    
-                    data.users.forEach(u => {
-                        const tr = document.createElement('tr');
-                        // Danger sign logic for users who have suspicious_tx_count > 0
-                        const dangerSign = u.suspicious_tx_count > 0 ? `<span class="danger-sign">🚨 flagged (${u.suspicious_tx_count})</span>` : '';
-                        
-                        tr.innerHTML = `
-                            <td><strong>${u.full_name}</strong> ${dangerSign}</td>
-                            <td>${u.phone_number}</td>
-                            <td>${u.pan_number || 'N/A'}</td>
-                            <td><span style="font-family: monospace;">${u.account_number || 'No Account'}</span></td>
-                            <td>${u.account_type || '-'}</td>
-                            <td>₹${u.balance || '0.00'}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-
-                    // Load Suspicious Transactions
-                    const sContainer = document.getElementById('suspiciousContainer');
-                    sContainer.innerHTML = '';
-                    
-                    if(data.suspicious_transactions.length === 0) {
-                        sContainer.innerHTML = '<p class="text-center text-muted" style="padding: 2rem;">No suspicious transactions detected.</p>';
-                    } else {
-                        data.suspicious_transactions.forEach(st => {
-                            const div = document.createElement('div');
-                            div.style.cssText = `
-                                padding: 1rem; 
-                                background: rgba(239, 68, 68, 0.1); 
-                                border-left: 4px solid var(--danger);
-                                margin-bottom: 1rem;
-                                border-radius: 4px;
-                            `;
-                            div.innerHTML = `
-                                <div class="flex justify-between items-center" style="margin-bottom: 0.5rem;">
-                                    <strong>${st.full_name}</strong>
-                                    <span class="text-danger">₹${st.amount}</span>
-                                </div>
-                                <div class="text-muted" style="font-size: 0.85rem;">
-                                    Account: <span style="font-family: monospace;">${st.account_number}</span><br>
-                                    Time: ${new Date(st.created_at).toLocaleString()}
-                                </div>
-                            `;
-                            sContainer.appendChild(div);
-                        });
-                    }
+                    populateKPIs(data);
+                    populateUsers(data.users);
+                    populateAlerts(data.suspicious_transactions);
                 }
             } catch(e) { console.error(e); }
         }
 
-        loadAdminData();
+        function populateKPIs(data) {
+            document.getElementById('totalUsers').innerText = data.users.length;
+            const totalBal = data.users.reduce((acc, u) => acc + parseFloat(u.balance || 0), 0);
+            document.getElementById('totalBalance').innerText = '₹' + totalBal.toLocaleString();
+            document.getElementById('totalSuspicious').innerText = data.suspicious_transactions.length;
+        }
+
+        function populateUsers(users) {
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = '';
+            
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-white/5 border-b border-white/5 transition-all group";
+                const threatLevel = u.suspicious_tx_count > 0 ? (u.suspicious_tx_count > 2 ? 'CRITICAL' : 'ELEVATED') : 'NORMAL';
+                const threatColor = u.suspicious_tx_count > 0 ? (u.suspicious_tx_count > 2 ? 'text-red-400 bg-red-400/10' : 'text-tertiary bg-tertiary/10') : 'text-green-400 bg-green-400/10';
+
+                tr.innerHTML = `
+                    <td class="px-6 py-6">
+                        <span class="block font-bold text-on-surface">${u.full_name}</span>
+                        <span class="block text-[10px] text-primary uppercase font-mono tracking-tighter">${u.account_number}</span>
+                    </td>
+                    <td class="px-6 py-6">
+                        <span class="block text-xs text-[#c5c6d2]">${u.phone_number}</span>
+                        <span class="block text-[10px] text-primary/60 font-mono">${u.pan_number}</span>
+                    </td>
+                    <td class="px-6 py-6 font-mono text-sm font-bold">
+                        ₹${parseFloat(u.balance).toLocaleString()}
+                    </td>
+                    <td class="px-6 py-6 text-center">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${threatColor}">
+                            ${threatLevel}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateAlerts(txs) {
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = '';
+
+            if(txs.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-[10px] uppercase font-bold text-[#c5c6d2]">No Active Threats Detected</div>';
+                return;
+            }
+
+            txs.forEach(tx => {
+                const div = document.createElement('div');
+                div.className = "p-4 bg-red-400/5 border border-red-400/10 rounded-2xl space-y-2";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black text-red-400 uppercase tracking-widest">Abnormal Flow</span>
+                        <span class="text-[9px] text-[#c5c6d2] font-mono">${new Date(tx.created_at).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-xs font-bold text-on-surface">${tx.full_name}</p>
+                            <p class="text-[9px] text-on-surface-variant font-mono">${tx.account_number}</p>
+                        </div>
+                        <p class="text-lg font-black text-red-400">₹${parseFloat(tx.amount).toLocaleString()}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        loadAdminDashboard();
+        // Auto-refresh every 30 seconds
+        setInterval(loadAdminDashboard, 30000);
     </script>
 </body>
 </html>

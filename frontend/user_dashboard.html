@@ -1,66 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard | Nexus Bank</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Vault Dashboard | ANTIGRAVITY</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                "colors": {
+                        "primary": "#b3c5ff",
+                        "tertiary": "#eac34a",
+                        "on-tertiary": "#3c2f00",
+                        "background": "#10141a",
+                        "surface": "#1c2026",
+                        "surface-container-low": "#181c22",
+                        "surface-container-high": "#262a31",
+                        "on-surface": "#dfe2eb",
+                        "on-surface-variant": "#c5c6d2",
+                },
+                "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                }
+              },
+            },
+          }
+        </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        body { background-color: #10141a; color: #dfe2eb; font-family: 'Inter', sans-serif; }
+        .vault-card {
+            background: linear-gradient(135deg, #1c2026 0%, #10141a 100%);
+            border: 1px solid rgba(179, 197, 255, 0.1);
+            box-shadow: 0 0 40px rgba(0, 35, 102, 0.2);
+        }
+        .glass-panel {
+            background: rgba(28, 32, 38, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        #notificationTray {
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #notificationTray.open {
+            transform: translateX(0);
+        }
+    </style>
 </head>
-<body>
-    <nav>
-        <a href="index.html" class="logo">Nexus<span>Bank</span></a>
-        <div class="nav-links">
-            <a href="#" onclick="logout()">Logout</a>
-        </div>
-    </nav>
+<body class="min-h-screen">
+    <!-- Nav -->
+    <header class="border-b border-white/5 bg-background/60 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+            <div class="flex items-center gap-2">
+                <span class="text-lg font-black tracking-tighter text-primary">ANTIGRAVITY</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <!-- Notification Bell -->
+                <div class="relative cursor-pointer" onclick="toggleInbox()">
+                    <span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</span>
+                    <div id="notifBadge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-background"></div>
+                </div>
 
-    <div class="container flex gap-1" style="align-items: flex-start;">
-        <!-- Left: Account Summary -->
-        <div class="glass-panel" style="flex: 1;">
-            <h2>Welcome, <span id="userName" style="color: var(--primary);">User</span></h2>
-            <p class="text-muted" style="margin-bottom: 2rem;">Acct No: <span id="accountNo" style="font-family: monospace;">---</span></p>
-            
-            <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 2rem;">
-                <p class="text-muted">Available Balance</p>
-                <h1 style="font-size: 2.5rem; color: var(--secondary);">₹<span id="balance">0.00</span></h1>
+                <div class="hidden md:flex flex-col items-end">
+                    <span id="userName" class="text-sm font-bold text-on-surface">---</span>
+                    <span id="accountNo" class="text-[10px] text-on-surface-variant font-mono">---</span>
+                </div>
+                <button onclick="logout()" class="text-on-surface-variant hover:text-red-400 transition-all">
+                    <span class="material-symbols-outlined">logout</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left: Summary & Transfer -->
+        <div class="lg:col-span-5 space-y-6">
+            <!-- Balance Card -->
+            <div class="vault-card p-8 rounded-[2.5rem] relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-all">
+                    <span class="material-symbols-outlined text-8xl">account_balance_wallet</span>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold mb-2">Available Capital</p>
+                    <h2 class="text-4xl md:text-5xl font-black text-white flex items-center gap-2">
+                        <span class="text-tertiary">₹</span><span id="balance">0.00</span>
+                    </h2>
+                    <div class="mt-8 flex items-center gap-2">
+                        <div class="px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
+                            <span class="text-[10px] text-green-400 font-bold uppercase tracking-wider">Active Portfolio</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <h3>Transfer Funds</h3>
-            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1rem;">ACID-compliant instant DBMS transfer</p>
-            <form id="transferForm">
-                <div class="form-group">
-                    <label>Receiver Phone Number</label>
-                    <input type="text" id="txnPhone" class="form-control" required placeholder="Enter receiver's registered phone">
+            <!-- Transfer Panel -->
+            <div class="glass-panel p-8 rounded-[2.5rem] space-y-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">send_money</span>
+                    <h3 class="text-xl font-bold">Secure Asset Transfer</h3>
                 </div>
-                <div class="form-group">
-                    <label>Amount (₹)</label>
-                    <input type="number" id="txnAmount" class="form-control" required min="1">
-                </div>
-                <div class="form-group">
-                    <label>Transaction Password</label>
-                    <input type="password" id="txnPass" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary mt-2">Send Money</button>
-                <p id="txMsg" class="text-center mt-2"></p>
-            </form>
+                <form id="transferForm" class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Receiver Phone</label>
+                        <input type="text" id="txnPhone" required 
+                               class="w-full bg-background border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/40 transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Amount (₹)</label>
+                        <input type="number" id="txnAmount" required min="1"
+                               class="w-full bg-background border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/40 transition-all font-mono text-lg">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Transaction Password</label>
+                        <input type="password" id="txnPass" required 
+                               class="w-full bg-background border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-tertiary/40 transition-all">
+                    </div>
+                    <button type="submit" id="btnTransfer" class="w-full bg-primary text-on-tertiary font-bold py-4 rounded-xl hover:bg-tertiary transition-all mt-4">
+                        Execute Transfer
+                    </button>
+                    <p id="txMsg" class="text-center text-xs font-medium h-4"></p>
+                </form>
+            </div>
         </div>
 
-        <!-- Right: Transaction History -->
-        <div class="glass-panel" style="flex: 1.5;">
-            <h3>Recent Transactions</h3>
-            <table style="margin-top: 1rem;">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Details</th>
-                    </tr>
-                </thead>
-                <tbody id="txTableBody">
-                    <!-- Populated via JS -->
-                </tbody>
-            </table>
+        <!-- Right: Transaction List -->
+        <div class="lg:col-span-7">
+            <div class="glass-panel rounded-[2.5rem] min-h-[600px] flex flex-col">
+                <div class="p-8 border-b border-white/5 flex justify-between items-center">
+                    <h3 class="text-xl font-bold flex items-center gap-3">
+                        <span class="material-symbols-outlined text-tertiary">history</span>
+                        Transaction Ledger
+                    </h3>
+                    <button onclick="loadDashboard()" class="text-on-surface-variant hover:text-primary transition-all">
+                        <span class="material-symbols-outlined">refresh</span>
+                    </button>
+                </div>
+                
+                <div class="p-4 flex-1 overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] uppercase tracking-widest text-on-surface-variant border-b border-white/5">
+                                <th class="px-4 py-4 font-bold">Protocol Date</th>
+                                <th class="px-4 py-4 font-bold text-center">Operation</th>
+                                <th class="px-4 py-4 font-bold text-right">Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txTableBody">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Tray -->
+    <div id="notificationTray" class="fixed top-0 right-0 h-full w-full max-w-sm glass-panel z-[100] shadow-2xl flex flex-col">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+            <h3 class="text-lg font-bold">Vault Inbox</h3>
+            <button onclick="toggleInbox()" class="p-2 hover:bg-white/5 rounded-full transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div id="notifList" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <!-- Notifications go here -->
+            <div class="text-center py-20 text-on-surface-variant text-sm">No new alerts in the vault.</div>
         </div>
     </div>
 
@@ -68,30 +178,94 @@
         const userId = localStorage.getItem('user_id');
         if(!userId) window.location.href = 'user_login.html';
 
+        const API_URL = 'http://localhost:5000/api';
+
+        async function toggleInbox() {
+            const tray = document.getElementById('notificationTray');
+            const isOpen = tray.classList.toggle('open');
+            if(isOpen) {
+                await markNotificationsRead();
+                document.getElementById('notifBadge').classList.add('hidden');
+            }
+        }
+
+        async function fetchNotifications() {
+            try {
+                const res = await fetch(`${API_URL}/user/notifications?user_id=${userId}`);
+                const data = await res.json();
+                if(data.success) {
+                    const list = document.getElementById('notifList');
+                    const badge = document.getElementById('notifBadge');
+                    const unread = data.notifications.some(n => !n.is_read);
+                    
+                    if(unread) badge.classList.remove('hidden');
+                    else badge.classList.add('hidden');
+
+                    if(data.notifications.length > 0) {
+                        list.innerHTML = data.notifications.map(n => `
+                            <div class="vault-card p-4 rounded-2xl border-l-4 ${n.title.includes('Debit') ? 'border-red-500' : 'border-green-500'}">
+                                <p class="text-[10px] text-tertiary font-bold mb-1 uppercase tracking-widest">${n.title}</p>
+                                <p class="text-xs text-on-surface whitespace-pre-wrap leading-relaxed">${n.content}</p>
+                                <p class="text-[9px] text-on-surface-variant mt-2 font-mono">${new Date(n.created_at).toLocaleString()}</p>
+                            </div>
+                        `).join('');
+                    } else {
+                        list.innerHTML = `<div class="text-center py-20 text-on-surface-variant text-sm">No new alerts in the vault.</div>`;
+                    }
+                }
+            } catch(e) { console.error("Notif Error:", e); }
+        }
+
+        async function markNotificationsRead() {
+            await fetch(`${API_URL}/user/notifications/read`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({user_id: userId})
+            });
+        }
+
         async function loadDashboard() {
             try {
-                const res = await fetch(`http://localhost:5000/api/user/dashboard?user_id=${userId}`);
+                const res = await fetch(`${API_URL}/user/dashboard?user_id=${userId}`);
                 const data = await res.json();
                 
                 if(data.success) {
                     document.getElementById('userName').innerText = data.account.full_name;
-                    document.getElementById('accountNo').innerText = data.account.account_number;
-                    document.getElementById('balance').innerText = data.account.balance;
+                    document.getElementById('accountNo').innerText = `ID: ${data.account.account_number}`;
+                    document.getElementById('balance').innerText = parseFloat(data.account.balance).toLocaleString('en-IN', {minimumFractionDigits: 2});
                     
                     const tbody = document.getElementById('txTableBody');
                     tbody.innerHTML = '';
+                    
+                    if(data.transactions.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-20 text-on-surface-variant text-sm">No recorded transactions in vault.</td></tr>`;
+                    }
+
                     data.transactions.forEach(tx => {
                         const tr = document.createElement('tr');
+                        tr.className = "hover:bg-white/5 transition-all group";
                         const isCredit = tx.receiver_account_id === data.account.account_id;
                         
                         tr.innerHTML = `
-                            <td>${new Date(tx.created_at).toLocaleString()}</td>
-                            <td><span style="padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; background: ${isCredit ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; color: ${isCredit ? 'var(--secondary)' : 'var(--danger)'}">${tx.transaction_type}</span></td>
-                            <td style="color: ${isCredit ? 'var(--secondary)' : 'var(--danger)'}; font-weight: bold;">
-                                ${isCredit ? '+' : '-'}₹${tx.amount}
+                            <td class="px-4 py-6">
+                                <span class="block text-xs font-bold text-on-surface">${new Date(tx.created_at).toLocaleDateString()}</span>
+                                <span class="block text-[10px] text-on-surface-variant uppercase">${new Date(tx.created_at).toLocaleTimeString()}</span>
                             </td>
-                            <td class="text-muted" style="font-size: 0.9rem;">
-                                ${tx.transaction_type === 'Transfer' ? (isCredit ? 'From Account' : 'To Account: ' + tx.recv_acc) : 'System'}
+                            <td class="px-4 py-6 text-center">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isCredit ? 'bg-green-400/10 text-green-400 border border-green-400/20' : 'bg-red-400/10 text-red-400 border border-red-400/20'}">
+                                    ${tx.transaction_type}
+                                </span>
+                            </td>
+                            <td class="px-4 py-6 text-right">
+                                <span class="font-mono text-sm font-bold ${isCredit ? 'text-green-400' : 'text-red-400'}">
+                                    ${isCredit ? '+' : '-'}₹${tx.amount}
+                                </span>
+                                <span class="block text-[10px] text-on-surface-variant">
+                                    ${tx.transaction_type === 'Transfer' ? 
+                                        (isCredit ? 'FROM: Internal Account' : 
+                                            (tx.recv_acc ? 'TO: Account ...' + tx.recv_acc.slice(-4) : 'TO: Phone ' + tx.receiver_phone_external)) 
+                                        : 'SYSTEM'}
+                                </span>
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -102,8 +276,12 @@
 
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = 'Processing...';
+            const btn = document.getElementById('btnTransfer');
+            const msgEl = document.getElementById('txMsg');
+            
+            btn.innerText = 'Encrypting & Executing...';
+            btn.disabled = true;
+            msgEl.innerText = '';
             
             const payload = {
                 user_id: userId,
@@ -113,27 +291,31 @@
             };
 
             try {
-                const res = await fetch('http://localhost:5000/api/user/transfer', {
+                const res = await fetch(`${API_URL}/user/transfer`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
                 const result = await res.json();
                 
-                const msgEl = document.getElementById('txMsg');
                 if(result.success) {
-                    msgEl.className = 'text-center mt-2 text-success';
+                    msgEl.className = 'text-center text-xs text-green-400 font-bold';
                     msgEl.innerText = result.message;
                     document.getElementById('transferForm').reset();
-                    loadDashboard(); // Refresh data
+                    setTimeout(() => {
+                        loadDashboard();
+                        msgEl.innerText = '';
+                    }, 2000);
                 } else {
-                    msgEl.className = 'text-center mt-2 text-danger';
+                    msgEl.className = 'text-center text-xs text-red-400 font-bold';
                     msgEl.innerText = result.error;
                 }
             } catch(e) {
                 console.error(e);
+                msgEl.innerText = 'Network error during execution.';
             } finally {
-                btn.innerText = 'Send Money';
+                btn.disabled = false;
+                btn.innerText = 'Execute Transfer';
             }
         });
 
@@ -143,6 +325,9 @@
         }
 
         loadDashboard();
+        fetchNotifications();
+        setInterval(loadDashboard, 15000); // Balance/History every 15s
+        setInterval(fetchNotifications, 5000); // Alerts every 5s
     </script>
 </body>
 </html>

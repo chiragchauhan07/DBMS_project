@@ -1,28 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Bank | Secure & Smart Banking</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ANTIGRAVITY | Secure Banking</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                "colors": {
+                        "on-tertiary-fixed-variant": "#574500",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#c5c6d2",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "tertiary-fixed": "#ffe088",
+                        "outline": "#8e909c",
+                        "inverse-surface": "#dfe2eb",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "inverse-on-surface": "#2d3137",
+                        "surface-tint": "#b3c5ff",
+                        "surface-bright": "#353940",
+                        "background": "#10141a",
+                        "on-tertiary": "#3c2f00",
+                        "secondary": "#b7c7e8",
+                        "on-primary-fixed": "#00174a",
+                        "on-error-container": "#ffdad6",
+                        "surface-dim": "#10141a",
+                        "tertiary": "#eac34a",
+                        "surface-container-lowest": "#0a0e14",
+                        "on-primary-fixed-variant": "#2a4386",
+                        "tertiary-container": "#cca830",
+                        "surface-container-high": "#262a31",
+                        "secondary-fixed": "#d6e3ff",
+                        "surface-variant": "#31353c",
+                        "on-tertiary-container": "#4f3e00",
+                        "on-background": "#dfe2eb",
+                        "primary-container": "#002366",
+                        "on-secondary": "#21314b",
+                        "on-surface": "#dfe2eb",
+                        "on-secondary-fixed": "#0a1b35",
+                        "error-container": "#93000a",
+                        "surface-container": "#1c2026",
+                        "surface": "#10141a",
+                        "surface-container-low": "#181c22",
+                        "on-secondary-container": "#a6b5d6",
+                        "secondary-container": "#384763",
+                        "secondary-fixed-dim": "#b7c7e8",
+                        "primary": "#b3c5ff",
+                        "inverse-primary": "#435b9f",
+                        "on-primary-container": "#758dd5",
+                        "on-primary": "#0d2c6e",
+                        "primary-fixed": "#dbe1ff",
+                        "outline-variant": "#444650",
+                        "surface-container-highest": "#31353c",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-secondary-fixed-variant": "#384763"
+                },
+                "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                },
+                "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                }
+              },
+            },
+          }
+        </script>
+    <style>
+          .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          }
+          .glass-effect {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+          }
+          body {
+            background-color: #10141a;
+            color: #dfe2eb;
+            font-family: 'Inter', sans-serif;
+          }
+          h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+          }
+          body {
+            min-height: max(884px, 100dvh);
+          }
+        </style>
 </head>
-<body>
-    <nav>
-        <a href="index.html" class="logo">Nexus<span>Bank</span></a>
-        <div class="nav-links">
-            <a href="user_login.html">Personal Banking</a>
-            <a href="admin_login.html">Admin Portal</a>
+<body class="antialiased overflow-x-hidden">
+    <header class="fixed top-0 w-full z-50 bg-[#10141a]/60 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[#b3c5ff]">shield_lock</span>
+                <span class="text-xl font-bold tracking-tighter text-[#dfe2eb]">ANTIGRAVITY</span>
+            </div>
+            <nav class="hidden md:flex gap-8">
+                <a class="text-[#eac34a] font-bold text-[10px] uppercase tracking-[0.1em]" href="index.html">Home</a>
+                <a class="text-[#c5c6d2] hover:text-[#eac34a] text-[10px] uppercase tracking-[0.1em] transition-all" href="user_login.html">Personal Banking</a>
+                <a class="text-[#c5c6d2] hover:text-[#eac34a] text-[10px] uppercase tracking-[0.1em] transition-all" href="admin_login.html">Admin Portal</a>
+            </nav>
+            <div class="flex items-center">
+                <a href="user_login.html" class="text-[#b3c5ff] text-[10px] uppercase tracking-[0.1em] font-medium hover:text-[#eac34a] transition-all">Sign In</a>
+            </div>
         </div>
-    </nav>
-    
-    <div class="container text-center mt-2 glass-panel" style="max-width: 800px; padding: 4rem 2rem;">
-        <h1 style="font-size: 3rem; margin-bottom: 1rem;">Welcome to the Future of <br><span style="color: var(--primary);">Banking</span></h1>
-        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.2rem;">Experience next-generation asset management powered by advanced DBMS transactional systems. Secure, fast, and highly reliable.</p>
-        
-        <div class="flex gap-1" style="justify-content: center;">
-            <a href="user_login.html" class="btn btn-primary" style="width: auto;">User Portal</a>
-            <a href="admin_login.html" class="btn" style="width: auto; background: rgba(255,255,255,0.1); color: white;">Admin Portal</a>
+    </header>
+    <main class="pt-16">
+        <section class="relative min-h-[795px] flex items-center justify-center overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <img alt="Security Vault" class="w-full h-full object-cover opacity-40" src="https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+            </div>
+            <div class="relative z-10 max-w-5xl mx-auto px-8 text-center md:text-left grid md:grid-cols-2 items-center gap-12">
+                <div class="space-y-8">
+                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-primary-container/30 border border-primary/20">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-primary">Secure Tier I Protocol</span>
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface leading-tight">
+                        Banking Engineered for the <span class="text-tertiary">Future</span>
+                    </h1>
+                    <p class="text-lg text-on-surface-variant max-w-md">
+                        Experience absolute security paired with precision-engineered digital finance. Powered by advanced DBMS transactional systems.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                        <a href="user_register.html" class="bg-tertiary text-on-tertiary font-bold px-8 py-4 rounded-full shadow-[0_0_20px_rgba(234,195,74,0.3)] text-center">
+                            Open Account
+                        </a>
+                        <a href="user_login.html" class="border border-primary/30 text-primary font-bold px-8 py-4 rounded-full hover:bg-primary-container/20 text-center">
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 px-8 bg-surface-container-low">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-16 text-center space-y-4">
+                    <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-on-surface">Precision Features</h2>
+                    <p class="text-on-surface-variant max-w-xl mx-auto uppercase text-[10px] tracking-[0.2em]">Institutional grade security for private assets</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-surface-container p-8 rounded-[2rem] hover:bg-surface-container-high transition-all group">
+                        <div class="w-14 h-14 bg-primary-container/30 rounded-2xl flex items-center justify-center mb-8">
+                            <span class="material-symbols-outlined text-primary text-3xl">lock</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-on-surface mb-4">Secure Transfers</h3>
+                        <p class="text-on-surface-variant leading-relaxed">ACID-compliant transactions ensuring your capital moves with absolute integrity.</p>
+                    </div>
+                    <div class="bg-surface-container p-8 rounded-[2rem] hover:bg-surface-container-high transition-all group border-t-2 border-tertiary/10">
+                        <div class="w-14 h-14 bg-tertiary/10 rounded-2xl flex items-center justify-center mb-8">
+                            <span class="material-symbols-outlined text-tertiary text-3xl">sms_failed</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-on-surface mb-4">Real-time Notifications</h3>
+                        <p class="text-on-surface-variant leading-relaxed">Stay updated with Twilio SMS notifications for every credit and debit in your account.</p>
+                    </div>
+                    <div class="bg-surface-container p-8 rounded-[2rem] hover:bg-surface-container-high transition-all group">
+                        <div class="w-14 h-14 bg-primary-container/30 rounded-2xl flex items-center justify-center mb-8">
+                            <span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-on-surface mb-4">OTP Verification</h3>
+                        <p class="text-on-surface-variant leading-relaxed">Multi-factor authentication (MFA) via SMS OTP to keep your digital identity untouchable.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="bg-[#10141a] py-12 px-8 border-t border-outline-variant/20">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
+            <div class="space-y-2">
+                <span class="text-lg font-black text-[#dfe2eb]">ANTIGRAVITY</span>
+                <p class="text-[#c5c6d2] text-[10px] uppercase tracking-[0.1em]">© 2024 ANTIGRAVITY SECURE BANK. ENGINEERED FOR TRUST.</p>
+            </div>
+            <div class="flex gap-8">
+                <a class="text-[#c5c6d2] hover:text-[#dfe2eb] text-[10px] uppercase tracking-[0.1em]" href="#">Privacy Protocol</a>
+                <a class="text-[#c5c6d2] hover:text-[#dfe2eb] text-[10px] uppercase tracking-[0.1em]" href="#">Asset Security</a>
+            </div>
         </div>
-    </div>
+    </footer>
 </body>
 </html>
