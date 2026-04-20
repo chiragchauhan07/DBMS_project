@@ -29,9 +29,13 @@ if not SUPABASE_DB_URI:
 def get_db_connection():
     if not SUPABASE_DB_URI:
         raise ValueError("Must provide SUPABASE_DB_URI in .env file")
-    conn = psycopg2.connect(SUPABASE_DB_URI, cursor_factory=RealDictCursor)
-    conn.autocommit = False
-    return conn
+    try:
+        conn = psycopg2.connect(SUPABASE_DB_URI, cursor_factory=RealDictCursor, connect_timeout=10)
+        conn.autocommit = False
+        return conn
+    except Exception as e:
+        print(f"[DB Connection Error]: {e}")
+        raise e
 
 # ----------------------------------------------------
 # VIRTUAL SMS SYSTEM (Replaces Twilio)
@@ -115,9 +119,9 @@ def get_latest_sms():
     if not phone:
         return jsonify({"success": False, "error": "phone parameter is required"}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute(
             """SELECT message, created_at FROM virtual_sms_log 
                WHERE phone_number = %s 
@@ -128,9 +132,11 @@ def get_latest_sms():
         if sms:
             return jsonify({"success": True, "message": sms['message'], "created_at": str(sms['created_at'])})
         return jsonify({"success": False, "error": "No messages found"})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Database error: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 @app.route('/api/sms/inbox', methods=['GET'])
 def get_sms_inbox():
@@ -141,9 +147,9 @@ def get_sms_inbox():
     if not phone:
         return jsonify({"success": False, "error": "phone parameter is required"}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute(
             """SELECT sms_id, message, created_at FROM virtual_sms_log 
                WHERE phone_number = %s 
@@ -152,9 +158,11 @@ def get_sms_inbox():
         )
         messages = cursor.fetchall()
         return jsonify({"success": True, "messages": messages})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Database error: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 # ----------------------------------------------------
 # UTILITIES
@@ -180,9 +188,9 @@ def add_notification(cursor, user_id, title, content):
 @app.route('/api/user/register', methods=['POST'])
 def user_register():
     data = request.json
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute(
             """INSERT INTO users (full_name, phone_number, email, pan_number, address) 
                VALUES (%s, %s, %s, %s, %s) RETURNING user_id""",
@@ -204,20 +212,20 @@ def user_register():
 
         return jsonify({"success": True, "message": "Account created successfully!"})
     except Exception as e:
-        conn.rollback()
-        return jsonify({"success": False, "error": str(e)}), 400
+        if 'conn' in locals(): conn.rollback()
+        return jsonify({"success": False, "error": f"Registration failed: {str(e)}"}), 400
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 @app.route('/api/user/request-otp', methods=['POST'])
 def request_otp():
     data = request.json
     phone = data.get('phone_number')
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT user_id, email FROM users WHERE phone_number = %s AND email = %s", (phone, data.get('email')))
         user = cursor.fetchone()
         if not user:
@@ -239,11 +247,11 @@ def request_otp():
 
         return jsonify({"success": True, "message": "OTP sent to your registered email!"})
     except Exception as e:
-        conn.rollback()
-        return jsonify({"success": False, "error": str(e)}), 400
+        if 'conn' in locals(): conn.rollback()
+        return jsonify({"success": False, "error": f"Authentication system error: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 @app.route('/api/user/login', methods=['POST'])
 def user_login():
@@ -251,9 +259,9 @@ def user_login():
     phone_number = data.get('phone_number')
     otp = data.get('otp')
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute(
             """SELECT * FROM login_otps 
                WHERE phone_number = %s AND email = %s AND otp_code = %s AND is_verified = FALSE AND expiry_at > %s
@@ -275,9 +283,12 @@ def user_login():
             return jsonify({"success": True, "user_id": user['user_id'], "full_name": user['full_name'], "message": "Login successful!"})
         else:
             return jsonify({"success": False, "error": "User details not found"}), 404
+    except Exception as e:
+        if 'conn' in locals(): conn.rollback()
+        return jsonify({"success": False, "error": f"Login failed: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 # ----------------------------------------------------
 # 2. USER DASHBOARD & TRANSFERS
@@ -285,9 +296,9 @@ def user_login():
 @app.route('/api/user/dashboard', methods=['GET'])
 def user_dashboard():
     user_id = request.args.get('user_id')
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM vw_user_summary WHERE user_id = %s", (user_id,))
         account = cursor.fetchone()
 
@@ -306,9 +317,11 @@ def user_dashboard():
         transactions = cursor.fetchall()
 
         return jsonify({"success": True, "account": account, "transactions": transactions})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Dashboard fetch failed: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 # ----------------------------------------------------
 # 3. NOTIFICATIONS (Vault Inbox)
@@ -316,31 +329,36 @@ def user_dashboard():
 @app.route('/api/user/notifications', methods=['GET'])
 def get_notifications():
     user_id = request.args.get('user_id')
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute(
             "SELECT * FROM notifications WHERE user_id = %s ORDER BY created_at DESC",
             (user_id,)
         )
         notifications = cursor.fetchall()
         return jsonify({"success": True, "notifications": notifications})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Failed to fetch notifications: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 @app.route('/api/user/notifications/read', methods=['POST'])
 def mark_notifications_read():
     user_id = request.json.get('user_id')
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s", (user_id,))
         conn.commit()
         return jsonify({"success": True})
+    except Exception as e:
+        if 'conn' in locals(): conn.rollback()
+        return jsonify({"success": False, "error": f"Failed to update notifications: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 @app.route('/api/user/transfer', methods=['POST'])
 def user_transfer():
@@ -350,11 +368,11 @@ def user_transfer():
     amount = data.get('amount')
     tx_password = data.get('transaction_password')
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute("""
-            SELECT a.account_id, a.account_number, u.full_name, u.phone_number, a.balance, a.transaction_password_hash 
+            SELECT a.account_id, a.account_number, u.full_name, u.phone_number, u.email, a.balance, a.transaction_password_hash 
             FROM users u
             JOIN accounts a ON u.user_id = a.user_id 
             WHERE u.user_id = %s
@@ -389,11 +407,8 @@ def user_transfer():
         )
         add_notification(cursor, sender_user_id, "Debit Alert", sender_msg)
         
-        # Get sender email
-        cursor.execute("SELECT email FROM users WHERE user_id = %s", (sender_user_id,))
-        sender_user = cursor.fetchone()
-        if sender_user and sender_user['email']:
-            send_email(sender_user['email'], "Transaction Alert: Debit", sender_msg)
+        if sender_acc['email']:
+            send_email(sender_acc['email'], "Transaction Alert: Debit", sender_msg)
 
         # Receiver Credit Notification
         if recv_acc:
@@ -410,11 +425,11 @@ def user_transfer():
         conn.commit()
         return jsonify({"success": True, "message": f"Successfully transferred ₹{amount} to {receiver_phone}. Ref: {ref_no}"})
     except Exception as e:
-        conn.rollback()
-        return jsonify({"success": False, "error": str(e)}), 400
+        if 'conn' in locals(): conn.rollback()
+        return jsonify({"success": False, "error": f"Transfer failed: {str(e)}"}), 400
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 # ----------------------------------------------------
 # 4. ADMIN PORTAL
@@ -422,24 +437,26 @@ def user_transfer():
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
     data = request.json
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT admin_id FROM admins WHERE username=%s AND password_hash=%s",
                        (data['username'], data['password']))
         admin = cursor.fetchone()
         if admin:
             return jsonify({"success": True, "message": "Admin logged in!"})
         return jsonify({"success": False, "error": "Invalid Admin credentials"}), 401
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Admin login error: {str(e)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 @app.route('/api/admin/dashboard', methods=['GET'])
 def admin_dashboard():
-    conn = get_db_connection()
-    cursor = conn.cursor()
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM vw_admin_dashboard ORDER BY suspicious_tx_count DESC")
         users = cursor.fetchall()
 
@@ -454,9 +471,26 @@ def admin_dashboard():
         suspicious_tx = cursor.fetchall()
 
         return jsonify({"success": True, "users": users, "suspicious_transactions": suspicious_tx})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Admin dashboard load failed: {str(e)}"}), 500
     finally:
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
+
+# ----------------------------------------------------
+# 5. HEALTH CHECK
+# ----------------------------------------------------
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
         cursor.close()
         conn.close()
+        return jsonify({"success": True, "status": "Connected to Database"})
+    except Exception as e:
+        return jsonify({"success": False, "status": "Database Connection Failed", "error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
